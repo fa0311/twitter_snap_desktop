@@ -22,6 +22,10 @@ class MyHomePage extends HookConsumerWidget {
     final text = useTextEditingController();
     final log = useState(<String>[]);
 
+    void addLog(String text) {
+      log.value = [...log.value, text];
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -47,14 +51,20 @@ class MyHomePage extends HookConsumerWidget {
                     type: ButtonType.elevatedButton,
                     onPressed: () async {
                       log.value = [];
-                      final ffmpeg = await getFfmpeg();
-                      log.value = [...log.value, 'ffmpeg: ${ffmpeg.path}'];
-                      final node = await getNodeJs();
-                      log.value = [...log.value, 'node: ${node.path}'];
+                      final ffmpeg = await FFmpeg().check();
+                      if (!ffmpeg.exists) {
+                        addLog('Downloading ffmpeg');
+                        await ffmpeg.install();
+                      }
+                      final node = await NodeJs().check();
+                      if (!node.exists) {
+                        addLog('Downloading node.js');
+                        await node.install();
+                      }
                       final output = await getDownloadsDirectory();
 
                       final process = await Process.start(
-                        '${node.path}/npx.cmd',
+                        '${node.path().path}/npx.cmd',
                         [
                           '-y',
                           'twitter-snap@latest',
@@ -62,17 +72,27 @@ class MyHomePage extends HookConsumerWidget {
                           '-o',
                           '${output!.path}/twitter-snap/{id}.{if-photo:png:mp4}',
                           '--ffmpegPath',
-                          '${ffmpeg.path}/bin/ffmpeg.exe',
+                          '${ffmpeg.path().path}/bin/ffmpeg.exe',
                           '--ffprobePath',
-                          '${ffmpeg.path}/bin/ffprobe.exe',
+                          '${ffmpeg.path().path}/bin/ffprobe.exe',
                         ],
                       );
 
-                      process.stdout.transform(utf8.decoder).listen((e) => log.value = [...log.value, e]);
-                      process.stderr.transform(utf8.decoder).listen((e) => log.value = [...log.value, e]);
+                      process.stdout.transform(utf8.decoder).listen(addLog);
+                      process.stderr.transform(utf8.decoder).listen(addLog);
                       await process.exitCode;
                     },
                     child: const Text('Snap'),
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: FutureButton(
+                    type: ButtonType.elevatedButton,
+                    onPressed: () async {
+                      await getApplicationCacheDirectory().then((dir) => dir.delete(recursive: true));
+                    },
+                    child: const Text('Remove Temp'),
                   ),
                 ),
                 SizedBox(

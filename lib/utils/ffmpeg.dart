@@ -6,15 +6,27 @@ import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:twitter_snap_desktop/utils/temp.dart';
 
-Future<FileSystemEntity> getFfmpeg() async {
-  final url = Uri.parse('https://www.gyan.dev/ffmpeg/builds/packages/ffmpeg-7.1-essentials_build.zip');
+class FFmpeg {
+  FFmpeg();
 
-  final ffmpegDir = await getApplicationCacheDirectory().then((dir) => Directory('${dir.path}/ffmpeg'));
+  Future<FFmpegChecked> check() async {
+    final ffmpegDir = await getApplicationCacheDirectory().then((dir) => Directory('${dir.path}/ffmpeg'));
+    final exists = ffmpegDir.existsSync() && ffmpegDir.listSync().isNotEmpty;
+    return FFmpegChecked(ffmpegDir: ffmpegDir, exists: exists);
+  }
+}
 
-  if (ffmpegDir.existsSync() && ffmpegDir.listSync().isNotEmpty) {
-    final list = await ffmpegDir.list().toList();
-    return list.sorted((a, b) => a.path.compareTo(b.path)).first;
-  } else {
+class FFmpegChecked {
+  FFmpegChecked({required this.ffmpegDir, required this.exists});
+  static Uri url = Uri.parse('https://www.gyan.dev/ffmpeg/builds/packages/ffmpeg-7.1-essentials_build.zip');
+  final Directory ffmpegDir;
+  final bool exists;
+
+  FileSystemEntity path() {
+    return ffmpegDir.listSync().sorted((a, b) => a.path.compareTo(b.path)).first;
+  }
+
+  Future<void> install() async {
     final zipFile = await getTemporary('zip');
 
     final response = await Dio().downloadUri(url, zipFile.path);
@@ -25,6 +37,5 @@ Future<FileSystemEntity> getFfmpeg() async {
     await ffmpegDir.create();
     await extractFileToDisk(zipFile.path, ffmpegDir.path);
     await zipFile.delete();
-    return ffmpegDir.listSync().sorted((a, b) => a.path.compareTo(b.path)).first;
   }
 }
