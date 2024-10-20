@@ -1,0 +1,9 @@
+include: package:pedantic_mono/analysis_options.yaml
+
+linter:
+  rules:
+    lines_longer_than_80_chars: false
+
+analyzer:
+  plugins:
+    - custom_lint
