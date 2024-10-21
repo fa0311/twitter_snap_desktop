@@ -35,7 +35,9 @@ class FutureButtonState extends State<FutureButton> {
       setState(() => state = true);
       await widget.onPressed();
     } finally {
-      setState(() => state = false);
+      if (mounted) {
+        setState(() => state = false);
+      }
     }
   }
 

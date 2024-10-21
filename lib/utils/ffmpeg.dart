@@ -11,7 +11,7 @@ class FFmpeg {
 
   Future<FFmpegChecked> check() async {
     final ffmpegDir = await getApplicationCacheDirectory().then((dir) => Directory('${dir.path}/ffmpeg'));
-    final exists = ffmpegDir.existsSync() && ffmpegDir.listSync().isNotEmpty;
+    final exists = await ffmpegDir.exists() && (await ffmpegDir.list().toList()).isNotEmpty;
     return FFmpegChecked(ffmpegDir: ffmpegDir, exists: exists);
   }
 }

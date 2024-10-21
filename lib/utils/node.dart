@@ -11,7 +11,7 @@ class NodeJs {
 
   Future<NodeJsChecked> check() async {
     final nodeDir = await getApplicationCacheDirectory().then((dir) => Directory('${dir.path}/node'));
-    final exists = nodeDir.existsSync() && nodeDir.listSync().isNotEmpty;
+    final exists = await nodeDir.exists() && (await nodeDir.list().toList()).isNotEmpty;
     return NodeJsChecked(nodeDir: nodeDir, exists: exists);
   }
 }

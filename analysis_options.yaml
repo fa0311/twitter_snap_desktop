@@ -3,6 +3,7 @@ include: package:pedantic_mono/analysis_options.yaml
 linter:
   rules:
     lines_longer_than_80_chars: false
+    avoid_slow_async_io: false
 
 analyzer:
   plugins:
