@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:twitter_snap_desktop/app.dart';
+import 'package:video_player_media_kit/video_player_media_kit.dart';
 
 void main() {
+  MediaKit.ensureInitialized();
+
   runApp(const ProviderScope(child: MyApp()));
 }
 
