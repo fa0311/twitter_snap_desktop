@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:collection/collection.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:twitter_snap_desktop/model/twitter_snap_model.dart';
@@ -21,11 +20,11 @@ class TwitterSnapNotifier extends _$TwitterSnapNotifier {
     state = state.copyWith(log: [...state.log, text]);
   }
 
-  String getIdList(String path) {
-    final regex = RegExp(r'[-\\/]([\d]+)[-.]');
-    final match = regex.allMatches(path).last;
-    return match.group(1)!;
-  }
+  // String getIdList(String path) {
+  //   final regex = RegExp(r'[-\\/]([\d]+)[-.]');
+  //   final match = regex.allMatches(path).last;
+  //   return match.group(1)!;
+  // }
 
   Future<void> exec(String url) async {
     if (state.isLoading) {
@@ -72,20 +71,10 @@ class TwitterSnapNotifier extends _$TwitterSnapNotifier {
     process.stdout.transform(utf8.decoder).listen(addLog);
     process.stderr.transform(utf8.decoder).listen(addLog);
 
-    final idList = <(String, String)>[];
-    output.watch().listen((e) {
-      final id = getIdList(e.path);
-      final find = idList.firstWhereOrNull((element) => element.$1 == id);
-      if (find == null) {
-        state = state.copyWith(files: idList.map((e) => e.$2).toList());
-        idList.add((id, e.path));
-      } else {
-        idList
-          ..remove(find)
-          ..add((id, e.path));
-      }
+    output.watch().listen((e) async {
+      final list = (await output.list().toList()).where((e) => e.path.startsWith('temp'));
+      state = state.copyWith(files: list.map((e) => e.path).toList());
     });
     await process.exitCode;
-    state = state.copyWith(isLoading: false, files: idList.map((e) => e.$2).toList());
   }
 }

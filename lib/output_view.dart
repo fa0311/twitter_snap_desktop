@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:twitter_snap_desktop/component/layout.dart';
-import 'package:twitter_snap_desktop/component/video_player.dart';
+import 'package:twitter_snap_desktop/component/video_viewer.dart';
 import 'package:twitter_snap_desktop/controller/twitter_snap_controller.dart';
 
 String removeAnsi(String text) {
@@ -40,12 +40,18 @@ class OutputViewPage extends HookConsumerWidget {
           ),
           for (final file in stream.files) ...[
             Text(file),
-            SizedBox(
-              height: 500,
-              child: VideoApp(
-                file: File(file),
+            if (file.endsWith('.png'))
+              SizedBox(
+                height: 500,
+                child: Image.file(File(file)),
               ),
-            ),
+            if (file.endsWith('.mp4'))
+              SizedBox(
+                height: 500,
+                child: VideoViewer(
+                  file: File(file),
+                ),
+              ),
           ],
         ],
       ),
