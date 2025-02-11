@@ -18,6 +18,7 @@ class OutputViewPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stream = ref.watch(twitterSnapNotifierProvider);
+    final scrollController = useScrollController();
 
     useEffect(
       () {
@@ -29,17 +30,28 @@ class OutputViewPage extends HookConsumerWidget {
       [],
     );
 
+    useEffect(
+      () {
+        if (scrollController.hasClients) {
+          scrollController.jumpTo(scrollController.position.maxScrollExtent);
+        }
+        return null;
+      },
+      [stream.log],
+    );
+
     return LayoutWidget(
       child: Column(
         children: [
           SizedBox(
             height: 100,
             child: ListView(
+              controller: scrollController,
               children: stream.log.map(removeAnsi).map(Text.new).toList(),
             ),
           ),
           for (final file in stream.files) ...[
-            Text(file),
+            Text(Uri.file(file).pathSegments.last),
             if (file.endsWith('.png'))
               SizedBox(
                 height: 500,

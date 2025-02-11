@@ -8,5 +8,6 @@
   },
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "dart.flutterSdkPath": ".fvm/versions/3.27.1"
 }
