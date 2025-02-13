@@ -12,23 +12,12 @@ String removeAnsi(String text) {
 }
 
 class OutputViewPage extends HookConsumerWidget {
-  const OutputViewPage({super.key, required this.text});
-  final String text;
+  const OutputViewPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stream = ref.watch(twitterSnapNotifierProvider);
     final scrollController = useScrollController();
-
-    useEffect(
-      () {
-        Future(() async {
-          await ref.read(twitterSnapNotifierProvider.notifier).exec(text);
-        });
-        return null;
-      },
-      [],
-    );
 
     useEffect(
       () {

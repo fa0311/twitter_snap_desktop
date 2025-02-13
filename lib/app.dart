@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:twitter_snap_desktop/component/future/button.dart';
 import 'package:twitter_snap_desktop/component/layout.dart';
+import 'package:twitter_snap_desktop/controller/twitter_snap_controller.dart';
 import 'package:twitter_snap_desktop/output_view.dart';
 
 class MyHomePage extends HookConsumerWidget {
@@ -42,10 +43,11 @@ class MyHomePage extends HookConsumerWidget {
                 type: ButtonType.elevatedButton,
                 onPressed: () async {
                   if (formKey.currentState!.validate()) {
+                    unawaited(ref.read(twitterSnapNotifierProvider.notifier).exec(text.text));
                     await Navigator.push(
                       context,
                       MaterialPageRoute<void>(
-                        builder: (context) => OutputViewPage(text: text.text),
+                        builder: (context) => const OutputViewPage(),
                       ),
                     );
                   }

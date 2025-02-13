@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -9,7 +10,7 @@ import 'package:twitter_snap_desktop/utils/node.dart';
 
 part 'twitter_snap_controller.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class TwitterSnapNotifier extends _$TwitterSnapNotifier {
   @override
   TwitterSnapModel build() {
@@ -49,6 +50,7 @@ class TwitterSnapNotifier extends _$TwitterSnapNotifier {
     final npxPath = '${node.path().path}/npx.cmd';
 
     final output = await getApplicationCacheDirectory().then((dir) => Directory('${dir.path}/latest'));
+
     if (await output.exists()) {
       await output.delete(recursive: true);
     }
@@ -72,7 +74,7 @@ class TwitterSnapNotifier extends _$TwitterSnapNotifier {
     process.stdout.transform(utf8.decoder).listen(addLog);
     process.stderr.transform(utf8.decoder).listen(addLog);
 
-    output.watch().listen((event) {
+    final logStream = output.watch().listen((event) {
       final path = Uri.file(event.path).pathSegments.last;
       final type = switch (event) {
         FileSystemCreateEvent() => 'Create',
@@ -83,11 +85,14 @@ class TwitterSnapNotifier extends _$TwitterSnapNotifier {
       addLog('$type: $path');
     });
 
-    output.watch(events: FileSystemEvent.modify).listen((event) async {
-      final list = await output.list().toList().catchError((_) => <FileSystemEntity>[]);
+    final imageStream = output.watch(events: FileSystemEvent.modify).listen((event) async {
+      final list = await output.list().toList();
       final tempIgnore = list.whereType<File>().where((e) => !e.uri.pathSegments.last.startsWith('temp'));
       state = state.copyWith(files: tempIgnore.map((e) => e.path).toList());
     });
     await process.exitCode;
+    await imageStream.cancel();
+    await logStream.cancel();
+    state = state.copyWith(isLoading: false);
   }
 }
